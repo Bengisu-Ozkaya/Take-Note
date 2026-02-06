@@ -3,6 +3,7 @@ package com.example.notepad.view;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -22,7 +23,8 @@ public class TakingNotes extends AppCompatActivity {
     private EditText etNoteTitle, etNoteContent;
     private MaterialButton btnSave,btnCancel;
     NotesDao notesDao;
-
+    private int noteId = -1;
+    private boolean isEditMode = false;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,6 +41,29 @@ public class TakingNotes extends AppCompatActivity {
         //database
         notesDao = AppDatabase.getInstance(this).notesDao();
 
+        // Intent'ten gelen verileri kontrol et
+        if (getIntent() != null && getIntent().hasExtra("NOTE_ID")) {
+            isEditMode = true;
+            noteId = getIntent().getIntExtra("NOTE_ID", -1);
+            String title = getIntent().getStringExtra("NOTE_TITLE");
+            String content = getIntent().getStringExtra("NOTE_CONTENT");
+
+            // DEBUG - Logları kontrol edin
+            Log.d("TakingNotes", "Note ID: " + noteId);
+            Log.d("TakingNotes", "Title: " + title);
+            Log.d("TakingNotes", "Content: " + content);
+
+            // Mevcut notu göster
+            if (title != null) {
+                etNoteTitle.setText(title);
+            }
+            if (content != null) {
+                etNoteContent.setText(content);
+            }
+
+            btnSave.setText("Güncelle");
+            btnCancel.setText("Sil");
+        }
         buttonListener();
 
     }
@@ -48,6 +73,9 @@ public class TakingNotes extends AppCompatActivity {
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (isEditMode){
+                    editNote();
+                }
                 if (etNoteContent.getText().toString().trim().isEmpty()){
                     Toast.makeText(TakingNotes.this,"Boş not kaydedilemez!",Toast.LENGTH_SHORT).show();;
                     finish(); // anasayfaya dön
@@ -65,6 +93,9 @@ public class TakingNotes extends AppCompatActivity {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (isEditMode){
+                    deleteNote();
+                }
                 // kullanıcı not girdiyse
                 if (!etNoteContent.getText().toString().trim().isEmpty()){
                     showCancel();
@@ -75,6 +106,31 @@ public class TakingNotes extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void deleteNote() {
+        showCancel();
+
+        Notes noteToDelete = notesDao.findById(noteId);
+        notesDao.delete(noteToDelete);
+
+        Toast.makeText(this,"Not silindi!",Toast.LENGTH_SHORT).show();
+    }
+
+    private void editNote() {
+        String title = etNoteTitle.getText().toString().trim();
+        String content = etNoteContent.getText().toString().trim();
+
+        // boş not
+        if (title.isEmpty() && content.isEmpty()) {
+            Toast.makeText(this, "Not boş olamaz!", Toast.LENGTH_SHORT).show();
+        }
+
+        Notes editNote = new Notes(title,content);
+        editNote.nid = noteId;
+        notesDao.update(editNote);
+
+        Toast.makeText(this,"Not Güncellendi!",Toast.LENGTH_SHORT).show();
     }
 
     private void showCancel() {
