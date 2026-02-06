@@ -31,9 +31,10 @@ public class HomePage extends AppCompatActivity {
     }
 
     private void openMenu() {
-        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(HomePage.this);
-        View bottomSheetView = getLayoutInflater().inflate(R.layout.fab_menu, null);
-        bottomSheetDialog.setContentView(bottomSheetView);
+        // BottomSheetDialog => ekranın altından çıkan pencere
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(HomePage.this); // açılır pencereyi oluşturuyor
+        View bottomSheetView = getLayoutInflater().inflate(R.layout.fab_menu, null); // oluşan pencerenin içinde ne olacak
+        bottomSheetDialog.setContentView(bottomSheetView); // pencere/dialog açıldığında fab_menu yu göster
 
         // not ve klasör oluşturma layoutları
         LinearLayout layoutCreateNote = bottomSheetView.findViewById(R.id.layoutCreateNote);
@@ -59,6 +60,6 @@ public class HomePage extends AppCompatActivity {
             }
         });
 
-        bottomSheetDialog.show();
+        bottomSheetDialog.show(); // dialogu göster
     }
 }
