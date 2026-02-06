@@ -11,11 +11,17 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.notepad.R;
+import com.example.notepad.dao.NotesDao;
+import com.example.notepad.database.AppDatabase;
+import com.example.notepad.database.Notes;
 import com.google.android.material.button.MaterialButton;
+
+import java.util.List;
 
 public class TakingNotes extends AppCompatActivity {
     private EditText etNoteTitle, etNoteContent;
     private MaterialButton btnSave,btnCancel;
+    NotesDao notesDao;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -29,6 +35,9 @@ public class TakingNotes extends AppCompatActivity {
         //button
         btnSave = findViewById(R.id.btnSave);
         btnCancel = findViewById(R.id.btnCancel);
+
+        //database
+        notesDao = AppDatabase.getInstance(this).notesDao();
 
         buttonListener();
 
@@ -91,5 +100,23 @@ public class TakingNotes extends AppCompatActivity {
 
     private void savingNotes() {
         //notu kaydet
+        String title = etNoteTitle.getText().toString().trim();
+        String content = etNoteContent.getText().toString().trim();
+
+        if (content.isEmpty()){
+            Toast.makeText(TakingNotes.this,"Boş Not Kaydedilemez!",Toast.LENGTH_SHORT);
+        }
+
+        Notes note = new Notes(title,content);
+        notesDao.insert(note);
+        Toast.makeText(this, "Not kaydedildi!", Toast.LENGTH_SHORT).show();
+
+        /*Database'e kaydedilme kontrolü*/
+        /*List<Notes> notes = notesDao.getAll();
+        for (Notes n:notes){
+            System.out.println("ID: " + n.nid + "\n" +
+                                "Title: " + n.noteTitle + "\n" +
+                                "Content: " + n.noteContent);
+        }*/
     }
 }
