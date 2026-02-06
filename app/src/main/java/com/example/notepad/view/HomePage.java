@@ -7,18 +7,34 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.notepad.R;
+import com.example.notepad.adapter.NoteAdapter;
+import com.example.notepad.dao.NotesDao;
+import com.example.notepad.database.AppDatabase;
+import com.example.notepad.database.Notes;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class HomePage extends AppCompatActivity {
-    private FloatingActionButton fabAdd;
+    FloatingActionButton fabAdd;
+    RecyclerView recyclerViewNotes;
+    NoteAdapter noteAdapter;
+    List<Notes> notesList;
+    NotesDao notesDao;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.homepage);
+
+        // dao
+        notesDao = AppDatabase.getInstance(this).notesDao();
 
         fabAdd = findViewById(R.id.fabAdd);
 
@@ -28,6 +44,24 @@ public class HomePage extends AppCompatActivity {
                 openMenu();
             }
         });
+
+        // recyclerview
+        recyclerViewNotes = findViewById(R.id.recyclerViewNotes);
+
+        setupRecyclerView();
+    }
+    private void setupRecyclerView() {
+        // liste nullsa liste oluştur
+        if (notesList == null) {
+            notesList = new ArrayList<>();
+        }
+
+        notesList = notesDao.getAll();
+
+        noteAdapter = new NoteAdapter(notesList);
+        recyclerViewNotes.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewNotes.setAdapter(noteAdapter);
+
     }
 
     private void openMenu() {
@@ -61,5 +95,23 @@ public class HomePage extends AppCompatActivity {
         });
 
         bottomSheetDialog.show(); // dialogu göster
+    }
+
+    @Override
+    protected void onResume() {
+        // Not kaydedip geri dönüldüğünde güncelleme burada da gözüksün
+        super.onResume();
+        loadNotes();
+    }
+
+    private void loadNotes() {
+        notesList = notesDao.getAll();
+
+        if (notesList == null){
+            notesList = new ArrayList<>();
+        }
+
+        noteAdapter = new NoteAdapter(notesList);
+        recyclerViewNotes.setAdapter(noteAdapter);
     }
 }
