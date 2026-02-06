@@ -1,5 +1,7 @@
 package com.example.notepad.view;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -37,7 +39,7 @@ public class TakingNotes extends AppCompatActivity {
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (etNoteContent.getText().toString().trim().isEmpty() && etNoteTitle.getText().toString().trim().isEmpty()){
+                if (etNoteContent.getText().toString().trim().isEmpty()){
                     Toast.makeText(TakingNotes.this,"Boş not kaydedilemez!",Toast.LENGTH_SHORT).show();;
                     finish(); // anasayfaya dön
                 }
@@ -54,16 +56,37 @@ public class TakingNotes extends AppCompatActivity {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (etNoteContent.getText().toString().trim().isEmpty() && etNoteTitle.getText().toString().trim().isEmpty()){
-                    Toast.makeText(TakingNotes.this,"Boş not siliniyor",Toast.LENGTH_SHORT).show();
-                    finish();
+                // kullanıcı not girdiyse
+                if (!etNoteContent.getText().toString().trim().isEmpty()){
+                    showCancel();
                 }
                 else{
-                    // alert dialog ile emin mi diye sor
-                    Toast.makeText(TakingNotes.this, "Not siliniyor", Toast.LENGTH_SHORT).show();
+                    //boş not anasayfaya dön
+                    finish();
                 }
             }
         });
+    }
+
+    private void showCancel() {
+        new AlertDialog.Builder(this)
+                .setTitle("Silmek istediğinize emin misiniz?")
+                .setMessage("Not kaydedilmedi, çıkmak istediğinize emin misiniz?")
+                .setPositiveButton("Evet", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Evet derse, notu kaydetmeden çık
+                        Toast.makeText(TakingNotes.this, "Not kaydedilmedi", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                })
+                .setNegativeButton("Hayır", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss(); // hayır derse dialogu kapat
+                    }
+                }).show();
+
     }
 
     private void savingNotes() {
