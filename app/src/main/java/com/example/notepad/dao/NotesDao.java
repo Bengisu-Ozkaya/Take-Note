@@ -24,6 +24,22 @@ public interface NotesDao {
     @Query("SELECT * FROM notes WHERE nid = :noteId LIMIT 1")
     Notes findById(int noteId);
 
+    // Klasörsüz notları getir
+    @Query("SELECT * FROM notes WHERE folder_id IS NULL")
+    List<Notes> getNotesWithoutFolder();
+
+    // Belirli bir klasördeki notları getir
+    @Query("SELECT * FROM notes WHERE folder_id = :folderId")
+    List<Notes> getNotesByFolderId(int folderId);
+
+    // Notu klasöre taşı (EKLE BUNU!)
+    @Query("UPDATE notes SET folder_id = :folderId WHERE nid = :noteId")
+    void moveNoteToFolder(int noteId, int folderId);
+
+    // Notu klasörden çıkar
+    @Query("UPDATE notes SET folder_id = NULL WHERE nid = :noteId")
+    void removeNoteFromFolder(int noteId);
+
     @Insert
     void insert(Notes note);
 

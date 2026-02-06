@@ -3,6 +3,7 @@ package com.example.notepad.view;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -22,9 +23,10 @@ import java.util.List;
 public class TakingNotes extends AppCompatActivity {
     private EditText etNoteTitle, etNoteContent;
     private MaterialButton btnSave,btnCancel;
-    NotesDao notesDao;
+    private NotesDao notesDao;
     private int noteId = -1;
     private boolean isEditMode = false;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,31 +43,25 @@ public class TakingNotes extends AppCompatActivity {
         //database
         notesDao = AppDatabase.getInstance(this).notesDao();
 
-        // Intent'ten gelen verileri kontrol et
-        if (getIntent() != null && getIntent().hasExtra("NOTE_ID")) {
+        checkIntent(); // intentten gelen verileri kontrol et
+        buttonListener();
+
+    }
+
+    private void checkIntent() {
+        // kontrol işlemleri
+        if (getIntent().hasExtra("NOTE_ID")) { // Eğer homepage den geldiysem verileri al
             isEditMode = true;
             noteId = getIntent().getIntExtra("NOTE_ID", -1);
             String title = getIntent().getStringExtra("NOTE_TITLE");
             String content = getIntent().getStringExtra("NOTE_CONTENT");
 
-            // DEBUG - Logları kontrol edin
-            Log.d("TakingNotes", "Note ID: " + noteId);
-            Log.d("TakingNotes", "Title: " + title);
-            Log.d("TakingNotes", "Content: " + content);
-
-            // Mevcut notu göster
-            if (title != null) {
-                etNoteTitle.setText(title);
-            }
-            if (content != null) {
-                etNoteContent.setText(content);
-            }
+            // başlığı ve notu yükle
+            etNoteTitle.setText(title);
+            etNoteContent.setText(content);
 
             btnSave.setText("Güncelle");
-            btnCancel.setText("Sil");
         }
-        buttonListener();
-
     }
 
     private void buttonListener() {
@@ -73,9 +69,6 @@ public class TakingNotes extends AppCompatActivity {
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isEditMode){
-                    editNote();
-                }
                 if (etNoteContent.getText().toString().trim().isEmpty()){
                     Toast.makeText(TakingNotes.this,"Boş not kaydedilemez!",Toast.LENGTH_SHORT).show();;
                     finish(); // anasayfaya dön
@@ -93,9 +86,6 @@ public class TakingNotes extends AppCompatActivity {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isEditMode){
-                    deleteNote();
-                }
                 // kullanıcı not girdiyse
                 if (!etNoteContent.getText().toString().trim().isEmpty()){
                     showCancel();
@@ -107,35 +97,9 @@ public class TakingNotes extends AppCompatActivity {
             }
         });
     }
-
-    private void deleteNote() {
-        showCancel();
-
-        Notes noteToDelete = notesDao.findById(noteId);
-        notesDao.delete(noteToDelete);
-
-        Toast.makeText(this,"Not silindi!",Toast.LENGTH_SHORT).show();
-    }
-
-    private void editNote() {
-        String title = etNoteTitle.getText().toString().trim();
-        String content = etNoteContent.getText().toString().trim();
-
-        // boş not
-        if (title.isEmpty() && content.isEmpty()) {
-            Toast.makeText(this, "Not boş olamaz!", Toast.LENGTH_SHORT).show();
-        }
-
-        Notes editNote = new Notes(title,content);
-        editNote.nid = noteId;
-        notesDao.update(editNote);
-
-        Toast.makeText(this,"Not Güncellendi!",Toast.LENGTH_SHORT).show();
-    }
-
     private void showCancel() {
         new AlertDialog.Builder(this)
-                .setTitle("Silmek istediğinize emin misiniz?")
+                .setTitle("Çıkmak istediğinize emin misiniz?")
                 .setMessage("Not kaydedilmedi, çıkmak istediğinize emin misiniz?")
                 .setPositiveButton("Evet", new DialogInterface.OnClickListener() {
                     @Override
@@ -159,13 +123,30 @@ public class TakingNotes extends AppCompatActivity {
         String title = etNoteTitle.getText().toString().trim();
         String content = etNoteContent.getText().toString().trim();
 
-        if (content.isEmpty()){
-            Toast.makeText(TakingNotes.this,"Boş Not Kaydedilemez!",Toast.LENGTH_SHORT);
+        if (isEditMode){ // notta güncelleme yaptıysak
+            Notes updateNote = notesDao.findById(noteId);
+            if (updateNote != null){
+                if(updateNote.noteContent == null && updateNote.noteContent.isEmpty()){
+                    Toast.makeText(this, "Boş not siliniyor...", Toast.LENGTH_SHORT).show();
+                    notesDao.delete(updateNote);
+                }
+
+                updateNote.noteTitle = title;
+                updateNote.noteContent = content;
+                notesDao.update(updateNote);
+            }
+        } else {
+            Notes note = new Notes(title,content);
+            notesDao.insert(note);
+            Toast.makeText(this, "Not kaydedildi!", Toast.LENGTH_SHORT).show();
         }
 
-        Notes note = new Notes(title,content);
-        notesDao.insert(note);
-        Toast.makeText(this, "Not kaydedildi!", Toast.LENGTH_SHORT).show();
+        if (content.isEmpty()){
+            Toast.makeText(TakingNotes.this,"Boş Not Kaydedilemez!",Toast.LENGTH_SHORT).show();
+        } else if (title.isEmpty()){
+            title = "Başlıksız Not";
+            Toast.makeText(TakingNotes.this,"Başlıksız not kaydedildi!",Toast.LENGTH_SHORT).show();
+        }
 
         /*Database'e kaydedilme kontrolü*/
         /*List<Notes> notes = notesDao.getAll();

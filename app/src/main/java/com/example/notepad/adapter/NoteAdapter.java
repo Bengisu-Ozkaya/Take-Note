@@ -1,6 +1,8 @@
 package com.example.notepad.adapter;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.provider.ContactsContract;
 import android.view.LayoutInflater;
@@ -8,10 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.notepad.R;
+import com.example.notepad.dao.NotesDao;
+import com.example.notepad.database.AppDatabase;
 import com.example.notepad.database.Notes;
 import com.example.notepad.view.TakingNotes;
 
@@ -20,9 +23,11 @@ import java.util.List;
 public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder>{
     private List<Notes> noteArray;
     private Context context;
+    private NotesDao notesDao;
 
     public NoteAdapter(List<Notes> noteList){
         this.noteArray = noteList;
+        notesDao = AppDatabase.getInstance(context).notesDao() ;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
@@ -58,7 +63,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder>{
         if (note.noteContent != null && !note.noteContent.isEmpty()){
             holder.tvNotePreview.setText(note.noteContent);
         }else {
-            holder.tvNoteTitle.setText("");
+            holder.tvNotePreview.setText("");
         }
 
         //kaydedilen notun üstüne tıklanırsa
@@ -73,9 +78,47 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder>{
                 intent.putExtra("NOTE_CONTENT", note.noteContent);
 
                 context.startActivity(intent);
-
             }
         });
+
+        //notun üstüne basılı tutulursa
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                int currentPosition = holder.getBindingAdapterPosition();
+
+                // pozisyonun geçerliliği kontrol ediliyor
+                if (currentPosition != RecyclerView.NO_POSITION) {
+                    Notes longClickedNote = noteArray.get(currentPosition);
+                    showDeleteDialog(longClickedNote, currentPosition); // Güncel pozisyonu gönder
+                }
+                return true;
+            }
+        });
+
+    }
+
+    private void showDeleteDialog(Notes note, int position) {
+        new AlertDialog.Builder(context)
+                .setTitle("Silmek istediğinize emin misiniz?")
+                .setMessage("Silinen not geri getirilemez yşne de silmek istediğinize emin misiniz?")
+                .setPositiveButton("Evet", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //silme
+                        notesDao.delete(note);
+                        noteArray.remove(position);
+                        notifyItemRemoved(position);
+                        notifyItemRangeChanged(position, noteArray.size());
+                    }
+                })
+                .setNegativeButton("Hayır", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //pencereyi kapat
+                        dialog.dismiss();
+                    }
+                }).show();
     }
 
     @Override
