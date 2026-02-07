@@ -35,7 +35,7 @@
 
     <!-- Klasöre Taşı (Sadece notlar için) -->
     <LinearLayout
-        android:id="@+id/layoutMoveToFolder"
+        android:id="@+id/layoutRename"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clickable="true"
@@ -55,7 +55,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:text="Klasöre Taşı"
+            android:text="Yeniden Adlandır"
             android:textColor="#374151"
             android:textSize="16sp" />
 
@@ -108,7 +108,7 @@
             android:background="#E5E7EB" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnBottomSheetCancel"
+            android:id="@+id/btnCancel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"

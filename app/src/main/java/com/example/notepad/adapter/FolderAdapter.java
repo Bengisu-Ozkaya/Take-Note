@@ -1,5 +1,6 @@
 package com.example.notepad.adapter;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +22,8 @@ import com.example.notepad.database.AppDatabase;
 import com.example.notepad.database.Folders;
 import com.example.notepad.database.Notes;
 import com.example.notepad.view.CreateFolder;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.button.MaterialButton;
 
 import org.w3c.dom.Text;
 
@@ -80,10 +84,53 @@ public class FolderAdapter extends RecyclerView.Adapter<FolderAdapter.ViewHolder
             int currentPosition = holder.getBindingAdapterPosition();
             if (currentPosition != RecyclerView.NO_POSITION) {
                 Folders longClickedFolder = folderList.get(currentPosition);
-                showDeleteDialog(longClickedFolder, currentPosition);
+                showFolderActions(longClickedFolder, currentPosition);
             }
             return true;
         });
+    }
+
+    private void showFolderActions(Folders longClickedFolder, int currentPosition) {
+        //dialog oluşturma
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(context);
+        View bottomSheetView = LayoutInflater.from(context).inflate(R.layout.folder_actions,null);
+        bottomSheetDialog.setContentView(bottomSheetView);
+
+        //viewlar
+        LinearLayout layoutRename = bottomSheetView.findViewById(R.id.layoutRename);
+        LinearLayout layoutDelete = bottomSheetView.findViewById(R.id.layoutDelete);
+        MaterialButton btnCancel = bottomSheetView.findViewById(R.id.btnCancel);
+
+        // rename
+        layoutRename.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // yeniden adlandırma
+                bottomSheetDialog.dismiss();
+                Toast.makeText(context,"Yeniden Adlandırılmaya tıklandı", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // silme
+        layoutDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bottomSheetDialog.dismiss();
+                showDeleteDialog(longClickedFolder,currentPosition);
+            }
+        });
+
+        //cancel
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bottomSheetDialog.dismiss();
+            }
+        });
+
+        bottomSheetDialog.show();
+
+
     }
 
     private void showDeleteDialog(Folders folder, int position) {
