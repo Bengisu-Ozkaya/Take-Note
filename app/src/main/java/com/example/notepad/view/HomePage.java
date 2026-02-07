@@ -7,13 +7,17 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.notepad.R;
+import com.example.notepad.adapter.FolderAdapter;
 import com.example.notepad.adapter.NoteAdapter;
+import com.example.notepad.dao.FolderDao;
 import com.example.notepad.dao.NotesDao;
 import com.example.notepad.database.AppDatabase;
+import com.example.notepad.database.Folders;
 import com.example.notepad.database.Notes;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -23,10 +27,13 @@ import java.util.List;
 
 public class HomePage extends AppCompatActivity {
     FloatingActionButton fabAdd;
-    RecyclerView recyclerViewNotes;
+    RecyclerView recyclerViewNotes, recyclerViewFolders;
     NoteAdapter noteAdapter;
+    FolderAdapter folderAdapter;
     List<Notes> notesList;
+    List<Folders> foldersList;
     NotesDao notesDao;
+    FolderDao folderDao;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -35,6 +42,7 @@ public class HomePage extends AppCompatActivity {
 
         // dao
         notesDao = AppDatabase.getInstance(this).notesDao();
+        folderDao = AppDatabase.getInstance(this).folderDao();
 
         fabAdd = findViewById(R.id.fabAdd);
 
@@ -47,6 +55,7 @@ public class HomePage extends AppCompatActivity {
 
         // recyclerview
         recyclerViewNotes = findViewById(R.id.recyclerViewNotes);
+        recyclerViewFolders = findViewById(R.id.recyclerViewFolders);
 
         setupRecyclerView();
     }
@@ -55,12 +64,20 @@ public class HomePage extends AppCompatActivity {
         if (notesList == null) {
             notesList = new ArrayList<>();
         }
+        if (foldersList == null){
+            foldersList = new ArrayList<>();
+        }
 
         notesList = notesDao.getAll();
+        foldersList = folderDao.getAll();
 
         noteAdapter = new NoteAdapter(notesList);
         recyclerViewNotes.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewNotes.setAdapter(noteAdapter);
+
+        folderAdapter = new FolderAdapter(foldersList);
+        recyclerViewFolders.setLayoutManager(new GridLayoutManager(this,3));
+        recyclerViewFolders.setAdapter(folderAdapter);
 
     }
 
@@ -105,13 +122,21 @@ public class HomePage extends AppCompatActivity {
     }
 
     private void loadNotes() {
+        //notları yükle
         notesList = notesDao.getAll();
-
         if (notesList == null){
             notesList = new ArrayList<>();
         }
 
         noteAdapter = new NoteAdapter(notesList);
         recyclerViewNotes.setAdapter(noteAdapter);
+
+        // Klasörleri yükle
+        foldersList = folderDao.getAll();
+        if (foldersList == null) {
+            foldersList = new ArrayList<>();
+        }
+        folderAdapter = new FolderAdapter(foldersList);
+        recyclerViewFolders.setAdapter(folderAdapter);
     }
 }

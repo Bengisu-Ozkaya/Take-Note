@@ -37,9 +37,9 @@ public class Notes {
         this.noteContent = noteContent;
     }
 
-    public Notes(String noteTitle, String noteContent, Integer folderId) {
+    /*public Notes(String noteTitle, String noteContent, Integer folderId) {
         this.noteTitle = noteTitle;
         this.noteContent = noteContent;
         this.folderId = folderId;
-    }
+    }*/
 }
