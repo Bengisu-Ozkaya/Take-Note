@@ -75,13 +75,12 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCancel"
-            style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:text="İptal"
-            android:textColor="#374151"
-            app:backgroundTint="#E5E7EB" />
+            android:textColor="#FFFF"
+            app:backgroundTint="#2563EB" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSave"

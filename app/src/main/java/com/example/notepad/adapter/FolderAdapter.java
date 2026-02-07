@@ -9,6 +9,7 @@ import android.icu.text.CaseMap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -107,7 +108,7 @@ public class FolderAdapter extends RecyclerView.Adapter<FolderAdapter.ViewHolder
             public void onClick(View v) {
                 // yeniden adlandırma
                 bottomSheetDialog.dismiss();
-                Toast.makeText(context,"Yeniden Adlandırılmaya tıklandı", Toast.LENGTH_SHORT).show();
+                showRenameDialog(longClickedFolder, currentPosition);
             }
         });
 
@@ -131,6 +132,64 @@ public class FolderAdapter extends RecyclerView.Adapter<FolderAdapter.ViewHolder
         bottomSheetDialog.show();
 
 
+    }
+
+    private void showRenameDialog(Folders folder, int position) {
+        // Dialog view'ını oluştur
+        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_create_folder, null);
+
+        // EditText'i bul
+        EditText etNewName = dialogView.findViewById(R.id.etNewName);
+
+
+        // Mevcut klasör adını göster
+        etNewName.setText(folder.folderName);
+        etNewName.setSelection(folder.folderName.length()); // Cursor'u sona al
+
+        // AlertDialog oluştur
+        AlertDialog dialog = new AlertDialog.Builder(context)
+                .setView(dialogView)
+                .create();
+
+        // Butonları bul
+        MaterialButton btnCancel = dialogView.findViewById(R.id.btnFolderCancel);
+        MaterialButton btnCreate = dialogView.findViewById(R.id.btnCreate);
+
+        // Buton metnini değiştir
+        btnCreate.setText("Güncelle");
+
+        // İptal
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        // Güncelle
+        btnCreate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String newName = etNewName.getText().toString().trim();
+
+                if (newName.isEmpty()) {
+                    Toast.makeText(context, "Klasör adı boş olamaz", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Klasör adını güncelle
+                    folder.folderName = newName;
+                    folderDao.update(folder);
+
+                    // RecyclerView'ı güncelle
+                    folderList.set(position, folder);
+                    notifyItemChanged(position);
+
+                    Toast.makeText(context, "Klasör adı güncellendi", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        dialog.show();
     }
 
     private void showDeleteDialog(Folders folder, int position) {
