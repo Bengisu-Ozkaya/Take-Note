@@ -40,6 +40,9 @@ public interface NotesDao {
     @Query("UPDATE notes SET folder_id = NULL WHERE nid = :noteId")
     void removeNoteFromFolder(int noteId);
 
+    @Query("SELECT * FROM notes WHERE folder_id = :folderId ORDER BY nid DESC")
+    List<Notes> getNotesByFolder(int folderId);
+
     @Insert
     void insert(Notes note);
 

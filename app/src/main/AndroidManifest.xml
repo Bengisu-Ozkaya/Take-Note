@@ -33,6 +33,12 @@
             android:exported="false">
         </activity>
 
+        <activity
+            android:name=".view.FolderDetail"
+            android:exported="false">
+
+        </activity>
+
     </application>
 
 

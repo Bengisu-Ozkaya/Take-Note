@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.notepad.R;
 import com.example.notepad.dao.NotesDao;
 import com.example.notepad.database.AppDatabase;
+import com.example.notepad.database.Folders;
 import com.example.notepad.database.Notes;
 import com.example.notepad.view.TakingNotes;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -27,6 +28,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder>{
     private List<Notes> noteArray;
     private Context context;
     private NotesDao notesDao;
+    private AppDatabase db;
 
     public NoteAdapter(List<Notes> noteList){
         this.noteArray = noteList;
@@ -117,7 +119,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder>{
             @Override
             public void onClick(View v) {
                 bottomSheetDialog.dismiss();
-                Toast.makeText(context, "Klasöre taşı tıklandı", Toast.LENGTH_SHORT).show();
+                showFolderSelection(note, position);
             }
         });
 
@@ -139,6 +141,61 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder>{
         });
 
         bottomSheetDialog.show();
+    }
+
+    private void showFolderSelection(Notes note, int position) {
+        db = AppDatabase.getInstance(context);
+        List<Folders> folderList = db.folderDao().getAll();
+
+        if (folderList == null && folderList.isEmpty()){
+            Toast.makeText(context, "Henüz klasör oluşturmadınız!", Toast.LENGTH_SHORT).show();
+        }
+
+        // Klasör isimlerini diziye çevir
+        String[] folderNames = new String[folderList.size()];
+        for (int i = 0; i < folderList.size(); i++) {
+            folderNames[i] = folderList.get(i).folderName;
+        }
+
+        // Dialog oluştur
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Klasör Seçin");
+        builder.setItems(folderNames, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Folders selectedFolder = folderList.get(which);
+                moveNoteToFolder(note, selectedFolder, position);
+            }
+        });
+        builder.setNegativeButton("İptal", null);
+        builder.show();
+    }
+
+    private void moveNoteToFolder(Notes note, Folders folder, int position) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // Notun folder ID'sini güncelle
+                note.folderId = folder.fid; // Notes entity'nizde folderId olmalı
+                notesDao.update(note);
+
+                // Ana thread'de UI güncelle
+                ((android.app.Activity) context).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Eğer ana ekrandaysanız ve sadece klasörsüz notları gösteriyorsanız
+                        // listeyi güncelle
+                        noteArray.remove(position);
+                        notifyItemRemoved(position);
+                        notifyItemRangeChanged(position, noteArray.size());
+
+                        Toast.makeText(context,
+                                note.noteTitle + " → " + folder.folderName + " taşındı!",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }).start();
     }
 
     private void showDeleteDialog(Notes note, int position) {

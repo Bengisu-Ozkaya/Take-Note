@@ -1,5 +1,7 @@
 package com.example.notepad.adapter;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -23,6 +25,7 @@ import com.example.notepad.database.AppDatabase;
 import com.example.notepad.database.Folders;
 import com.example.notepad.database.Notes;
 import com.example.notepad.view.CreateFolder;
+import com.example.notepad.view.FolderDetail;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 
@@ -80,7 +83,22 @@ public class FolderAdapter extends RecyclerView.Adapter<FolderAdapter.ViewHolder
             }
         });
 
-        // klasör silme
+        // klasörün içine girme
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, FolderDetail.class);
+
+                // Klasör bilgilerini gönder
+                intent.putExtra("FOLDER_ID", folder.fid);
+                intent.putExtra("FOLDER_NAME", folder.folderName);
+
+                context.startActivity(intent);
+            }
+        });
+
+
+        // klasör ayarı değiştirme
         holder.itemView.setOnLongClickListener(v -> {
             int currentPosition = holder.getBindingAdapterPosition();
             if (currentPosition != RecyclerView.NO_POSITION) {
