@@ -9,6 +9,7 @@ import androidx.room.Update;
 
 import com.example.notepad.database.Notes;
 
+import java.nio.channels.SelectableChannel;
 import java.util.List;
 
 // Veritabanında yapılabilecek işlemler burada yapılıyor

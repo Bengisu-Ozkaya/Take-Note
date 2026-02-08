@@ -104,11 +104,11 @@ public class CreateFolder extends AppCompatActivity {
     private void showCancelDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("İptal etmek istediğinze emin misiniz?")
-                .setMessage("Dosya kaydedilmedi, iptal etmek istediğinize emin misiniz?")
+                .setMessage("Klasör oluşturulmadı, iptal etmek istediğinize emin misiniz?")
                 .setPositiveButton("Evet", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText(CreateFolder.this,"Dosya kaydedilmedi!",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CreateFolder.this,"Klasör oluşturulmadı!",Toast.LENGTH_SHORT).show();
                         finish();
                     }
                 })

@@ -176,22 +176,20 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder>{
             @Override
             public void run() {
                 // Notun folder ID'sini güncelle
-                note.folderId = folder.fid; // Notes entity'nizde folderId olmalı
+                note.folderId = folder.fid;
                 notesDao.update(note);
 
                 // Ana thread'de UI güncelle
                 ((android.app.Activity) context).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        // Eğer ana ekrandaysanız ve sadece klasörsüz notları gösteriyorsanız
-                        // listeyi güncelle
-                        noteArray.remove(position);
-                        notifyItemRemoved(position);
-                        notifyItemRangeChanged(position, noteArray.size());
-
+                        // SADECE Toast mesajı göster, listeden kaldırma
                         Toast.makeText(context,
                                 note.noteTitle + " → " + folder.folderName + " taşındı!",
                                 Toast.LENGTH_SHORT).show();
+
+                        // Adapter'ı güncelle (değişikliği yansıt)
+                        notifyItemChanged(position);
                     }
                 });
             }

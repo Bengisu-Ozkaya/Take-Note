@@ -27,7 +27,6 @@ public class FolderDetail extends AppCompatActivity {
     RecyclerView rvFolderNotes;
 
     private LinearLayout layoutEmptyState;
-    private FloatingActionButton fabAddNote;
 
     //Notları göstermek için gerekli "Note" şeyleri
     private NoteAdapter noteAdapter;
@@ -47,24 +46,11 @@ public class FolderDetail extends AppCompatActivity {
         tvFolderName = findViewById(R.id.tvFolderName);
         tvNoteCount = findViewById(R.id.tvNoteCount);
 
-        // button
-        fabAddNote = findViewById(R.id.fabAddNote);
-
         //recyclerview
         rvFolderNotes = findViewById(R.id.rvFolderNotes);
 
         //layout
         layoutEmptyState = findViewById(R.id.layoutEmptyState);
-
-        fabAddNote.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(FolderDetail.this,TakingNotes.class);
-                intent.putExtra("FOLDER_ID", folderId);
-                intent.putExtra("FOLDER_NAME", folderName);
-                startActivity(intent);
-            }
-        });
 
         setupRecyclerView();
 

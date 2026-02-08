@@ -27,6 +27,10 @@ public class TakingNotes extends AppCompatActivity {
     private int noteId = -1;
     private boolean isEditMode = false;
 
+    // Orijinal değerleri saklamak için (update modunda işlem iptali için)
+    private String title = "";
+    private String content = "";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,8 +57,8 @@ public class TakingNotes extends AppCompatActivity {
         if (getIntent().hasExtra("NOTE_ID")) { // Eğer homepage den geldiysem verileri al
             isEditMode = true;
             noteId = getIntent().getIntExtra("NOTE_ID", -1);
-            String title = getIntent().getStringExtra("NOTE_TITLE");
-            String content = getIntent().getStringExtra("NOTE_CONTENT");
+            title = getIntent().getStringExtra("NOTE_TITLE");
+            content = getIntent().getStringExtra("NOTE_CONTENT");
 
             // başlığı ve notu yükle
             etNoteTitle.setText(title);
@@ -86,6 +90,9 @@ public class TakingNotes extends AppCompatActivity {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (!hasChanged()){
+                    finish();
+                }
                 // kullanıcı not girdiyse
                 if (!etNoteContent.getText().toString().trim().isEmpty()){
                     showCancel();
@@ -97,6 +104,22 @@ public class TakingNotes extends AppCompatActivity {
             }
         });
     }
+
+    private boolean hasChanged() {
+        String currentTitle = etNoteTitle.getText().toString().trim();
+        String currentContent = etNoteContent.getText().toString().trim();
+        boolean isChanged = false;
+
+        if (isEditMode){
+            if (!title.equals(currentTitle) || !content.equals(currentContent)){
+                isChanged = true;
+            }
+        }else {
+            isChanged = false;
+        }
+        return isChanged;
+    }
+
     private void showCancel() {
         new AlertDialog.Builder(this)
                 .setTitle("Çıkmak istediğinize emin misiniz?")
