@@ -1,8 +1,16 @@
 package com.example.notepad.view;
 
+import static android.view.View.INVISIBLE;
+import static android.view.View.VISIBLE;
+
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
@@ -28,13 +36,17 @@ import java.util.List;
 public class HomePage extends AppCompatActivity {
     FloatingActionButton fabAdd;
     RecyclerView recyclerViewNotes, recyclerViewFolders;
+    ImageButton btnSearch;
+    EditText etSearch;
     NoteAdapter noteAdapter;
     FolderAdapter folderAdapter;
     List<Notes> notesList;
     List<Folders> foldersList;
     NotesDao notesDao;
     FolderDao folderDao;
+    Boolean isSearch = false; // arama açık mı
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,7 +56,12 @@ public class HomePage extends AppCompatActivity {
         notesDao = AppDatabase.getInstance(this).notesDao();
         folderDao = AppDatabase.getInstance(this).folderDao();
 
+        //button
+        btnSearch = findViewById(R.id.btnSearch);
         fabAdd = findViewById(R.id.fabAdd);
+
+        //edittext
+        etSearch = findViewById(R.id.etSearch);
 
         fabAdd.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -53,11 +70,103 @@ public class HomePage extends AppCompatActivity {
             }
         });
 
+        btnSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleSearch();
+            }
+        });
+
+        // EditText'e yazı yazılıyorsa arama yap
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterNotes(s.toString());
+            }
+        });
+
         // recyclerview
         recyclerViewNotes = findViewById(R.id.recyclerViewNotes);
         recyclerViewFolders = findViewById(R.id.recyclerViewFolders);
 
         setupRecyclerView();
+    }
+
+    private void filterNotes(String query) {
+        if (query.isEmpty()){ // aramaya bir şey girilmediyse tüm notları göster
+            noteAdapter = new NoteAdapter(notesList);
+            recyclerViewNotes.setAdapter(noteAdapter);
+
+            folderAdapter = new FolderAdapter(foldersList);
+            recyclerViewFolders.setAdapter(folderAdapter);
+            return;
+        }
+
+        List<Notes> filteredList = new ArrayList<>(); //filtrenen notlar listesi
+        List<Folders> filteredFolderList = new ArrayList<>(); // filtrelenen klasörler listesi
+
+        // tüm notlar içerisinde arama yap
+        for (Notes note : notesList) {
+            // Başlıkta veya içerikte ara
+            boolean titleMatches = note.noteTitle != null &&
+                    note.noteTitle.toLowerCase().contains(query.toLowerCase());
+
+            boolean contentMatches = note.noteContent != null &&
+                    note.noteContent.toLowerCase().contains(query.toLowerCase());
+
+            // Eşleşme varsa listeye ekle
+            if (titleMatches || contentMatches) {
+                filteredList.add(note);
+            }
+        }
+
+        for (Folders folder : foldersList){
+            boolean nameMatches = folder.folderName != null &&
+                    folder.folderName.toLowerCase().contains(query.toLowerCase());
+
+            if(nameMatches){
+                filteredFolderList.add(folder);
+            }
+        }
+        // Adapter'ı güncelle
+        noteAdapter = new NoteAdapter(filteredList);
+        recyclerViewNotes.setAdapter(noteAdapter);
+
+        folderAdapter = new FolderAdapter(filteredFolderList);
+        recyclerViewFolders.setAdapter(folderAdapter);
+    }
+
+    private void toggleSearch() {
+        if (!isSearch){
+            isSearch = true;
+            etSearch.setVisibility(VISIBLE);
+            etSearch.requestFocus();
+
+            // Klavyeyi aç
+            etSearch.post(new Runnable() {
+                @Override
+                public void run() {
+                    android.view.inputmethod.InputMethodManager imm =
+                            (android.view.inputmethod.InputMethodManager) getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(etSearch, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+                }
+            });
+
+        }else {
+            isSearch = false;
+            etSearch.setVisibility(INVISIBLE);
+            filterNotes(""); // tüm notları göstersin
+        }
     }
     private void setupRecyclerView() {
         // liste nullsa liste oluştur

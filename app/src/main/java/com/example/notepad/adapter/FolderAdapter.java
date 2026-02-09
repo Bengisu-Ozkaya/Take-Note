@@ -114,6 +114,8 @@ public class FolderAdapter extends RecyclerView.Adapter<FolderAdapter.ViewHolder
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(context);
         View bottomSheetView = LayoutInflater.from(context).inflate(R.layout.folder_actions,null);
         bottomSheetDialog.setContentView(bottomSheetView);
+        TextView tvItemTitle = bottomSheetView.findViewById(R.id.tvItemTitle);
+        tvItemTitle.setText(longClickedFolder.folderName);
 
         //viewlar
         LinearLayout layoutRename = bottomSheetView.findViewById(R.id.layoutRename);

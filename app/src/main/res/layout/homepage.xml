@@ -24,6 +24,21 @@
             app:title="Notlarım"
             app:titleTextColor="@android:color/white">
 
+            <!-- Arama EditText (Başlangıçta gizli) -->
+            <EditText
+                android:id="@+id/etSearch"
+                android:layout_width="320dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="20dp"
+                android:background="@android:color/transparent"
+                android:hint="Ara..."
+                android:textColor="@android:color/white"
+                android:textColorHint="#B0C4DE"
+                android:inputType="text"
+                android:imeOptions="actionSearch"
+                android:visibility="gone" />
+
+            <!-- Arama Butonu -->
             <ImageButton
                 android:id="@+id/btnSearch"
                 android:layout_width="wrap_content"
@@ -58,6 +73,8 @@
                     android:orientation="vertical">
 
                     <!-- Klasörler için RecyclerView (Grid) -->
+
+                    <!-- Ayırıcı Çizgi -->
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerViewFolders"
                         android:layout_width="match_parent"
@@ -68,7 +85,6 @@
                         tools:listitem="@layout/item_folder"
                         tools:spanCount="3" />
 
-                    <!-- Ayırıcı Çizgi -->
                     <View
                         android:id="@+id/divider"
                         android:layout_width="match_parent"

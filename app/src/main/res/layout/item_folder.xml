@@ -24,7 +24,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:contentDescription="Klasör"
-            android:src="@android:drawable/ic_menu_view"
+            android:src="@drawable/ic_folder"
             app:tint="#F59E0B" />
 
         <TextView

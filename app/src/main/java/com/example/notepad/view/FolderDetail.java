@@ -3,6 +3,7 @@ package com.example.notepad.view;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,6 +26,7 @@ public class FolderDetail extends AppCompatActivity {
     
     TextView tvFolderName, tvNoteCount;
     RecyclerView rvFolderNotes;
+    ImageButton btnBack;
 
     private LinearLayout layoutEmptyState;
 
@@ -46,6 +48,9 @@ public class FolderDetail extends AppCompatActivity {
         tvFolderName = findViewById(R.id.tvFolderName);
         tvNoteCount = findViewById(R.id.tvNoteCount);
 
+        //button
+        btnBack = findViewById(R.id.btnBack);
+
         //recyclerview
         rvFolderNotes = findViewById(R.id.rvFolderNotes);
 
@@ -60,6 +65,13 @@ public class FolderDetail extends AppCompatActivity {
         tvFolderName.setText(folderName);
 
         loadNotes();
+
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
     private void setupRecyclerView() {

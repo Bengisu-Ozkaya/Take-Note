@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
-            android:text="Not Başlığı"
+            android:text="Klasör Başlığı"
             android:textColor="#1F2937"
             android:textSize="16sp"
             android:textStyle="bold" />

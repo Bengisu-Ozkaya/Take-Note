@@ -108,6 +108,8 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder>{
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(context);
         View bottomSheetView = LayoutInflater.from(context).inflate(R.layout.note_actions,null);
         bottomSheetDialog.setContentView(bottomSheetView);
+        TextView tvItemTitle = bottomSheetView.findViewById(R.id.tvItemTitle);
+        tvItemTitle.setText(note.noteTitle);
 
         //viewlar
         LinearLayout layoutMoveToFolder = bottomSheetView.findViewById(R.id.layoutMoveToFolder);
