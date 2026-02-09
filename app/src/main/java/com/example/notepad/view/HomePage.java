@@ -165,6 +165,7 @@ public class HomePage extends AppCompatActivity {
         }else {
             isSearch = false;
             etSearch.setVisibility(INVISIBLE);
+            etSearch.setText(""); // Temizle
             filterNotes(""); // tüm notları göstersin
         }
     }

@@ -149,13 +149,5 @@
             android:textSize="16sp"
             android:textColor="#999999" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Yeni not eklemek için + butonuna tıklayın"
-            android:textSize="14sp"
-            android:textColor="#BBBBBB" />
-
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

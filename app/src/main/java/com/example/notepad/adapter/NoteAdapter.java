@@ -14,9 +14,11 @@ import android.widget.Toast;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.notepad.R;
+import com.example.notepad.dao.NoteFolderDao;
 import com.example.notepad.dao.NotesDao;
 import com.example.notepad.database.AppDatabase;
 import com.example.notepad.database.Folders;
+import com.example.notepad.database.NoteFolder;
 import com.example.notepad.database.Notes;
 import com.example.notepad.view.TakingNotes;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -144,60 +146,86 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder>{
 
         bottomSheetDialog.show();
     }
-
     private void showFolderSelection(Notes note, int position) {
         db = AppDatabase.getInstance(context);
         List<Folders> folderList = db.folderDao().getAll();
+        NoteFolderDao noteFolderDao = db.noteFolderDao();
 
-        if (folderList == null && folderList.isEmpty()){
-            Toast.makeText(context, "Henüz klasör oluşturmadınız!", Toast.LENGTH_SHORT).show();
-        }
+        // Notun şu anda hangi klasörlerde olduğunu al
+        List<Integer> selectedFolderIds = noteFolderDao.getFolderIdsForNote(note.nid);
 
         // Klasör isimlerini diziye çevir
         String[] folderNames = new String[folderList.size()];
+        boolean[] checkedItems = new boolean[folderList.size()];
+
         for (int i = 0; i < folderList.size(); i++) {
             folderNames[i] = folderList.get(i).folderName;
+            checkedItems[i] = selectedFolderIds.contains(folderList.get(i).fid);
         }
 
-        // Dialog oluştur
+        // Multi-choice dialog oluştur
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("Klasör Seçin");
-        builder.setItems(folderNames, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Folders selectedFolder = folderList.get(which);
-                moveNoteToFolder(note, selectedFolder, position);
-            }
-        });
-        builder.setNegativeButton("İptal", null);
-        builder.show();
-    }
+        builder.setTitle("Klasör Seçiniz");
 
-    private void moveNoteToFolder(Notes note, Folders folder, int position) {
+        if (folderList == null || folderList.isEmpty()) {
+            builder.setMessage("Henüz Klasör Oluşturmadınız");
+
+            builder.setNegativeButton("İptal", null);
+            builder.show();
+        } else {
+            builder.setMultiChoiceItems(folderNames, checkedItems,
+                    new DialogInterface.OnMultiChoiceClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                            checkedItems[which] = isChecked;
+                        }
+                    });
+
+            builder.setPositiveButton("Kaydet", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    updateNoteFolders(note, folderList, checkedItems, position);
+                }
+            });
+
+            builder.setNegativeButton("İptal", null);
+            builder.show();
+        }
+
+
+    }
+    private void updateNoteFolders(Notes note, List<Folders> folderList,
+                                   boolean[] checkedItems, int position) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                // Notun folder ID'sini güncelle
-                note.folderId = folder.fid;
-                notesDao.update(note);
+                NoteFolderDao noteFolderDao = db.noteFolderDao();
 
-                // Ana thread'de UI güncelle
+                // Önce tüm ilişkileri sil
+                noteFolderDao.removeNoteFromAllFolders(note.nid);
+
+                // Seçili klasörlere ekle
+                for (int i = 0; i < checkedItems.length; i++) {
+                    if (checkedItems[i]) {
+                        NoteFolder crossRef = new NoteFolder(
+                                note.nid,
+                                folderList.get(i).fid
+                        );
+                        noteFolderDao.addNoteToFolder(crossRef);
+                    }
+                }
+
                 ((android.app.Activity) context).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        // SADECE Toast mesajı göster, listeden kaldırma
-                        Toast.makeText(context,
-                                note.noteTitle + " → " + folder.folderName + " taşındı!",
+                        Toast.makeText(context, "Klasörler güncellendi!",
                                 Toast.LENGTH_SHORT).show();
-
-                        // Adapter'ı güncelle (değişikliği yansıt)
                         notifyItemChanged(position);
                     }
                 });
             }
         }).start();
     }
-
     private void showDeleteDialog(Notes note, int position) {
         new AlertDialog.Builder(context)
                 .setTitle("Notu silmek istediğinize emin misiniz?")

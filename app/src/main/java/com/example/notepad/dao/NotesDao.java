@@ -6,13 +6,9 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 
-
 import com.example.notepad.database.Notes;
 
-import java.nio.channels.SelectableChannel;
 import java.util.List;
-
-// Veritabanında yapılabilecek işlemler burada yapılıyor
 
 @Dao
 public interface NotesDao {
@@ -25,27 +21,22 @@ public interface NotesDao {
     @Query("SELECT * FROM notes WHERE nid = :noteId LIMIT 1")
     Notes findById(int noteId);
 
-    // Klasörsüz notları getir
-    @Query("SELECT * FROM notes WHERE folder_id IS NULL")
+    // Klasörde olmayan notları getir (hiçbir klasörde bulunmayan)
+    @Query("SELECT * FROM notes WHERE nid NOT IN (SELECT DISTINCT note_id FROM note_folder_cross_ref)")
     List<Notes> getNotesWithoutFolder();
 
-    // Belirli bir klasördeki notları getir
-    @Query("SELECT * FROM notes WHERE folder_id = :folderId")
-    List<Notes> getNotesByFolderId(int folderId);
-
-    // Notu klasöre taşı (EKLE BUNU!)
-    @Query("UPDATE notes SET folder_id = :folderId WHERE nid = :noteId")
-    void moveNoteToFolder(int noteId, int folderId);
-
-    // Notu klasörden çıkar
-    @Query("UPDATE notes SET folder_id = NULL WHERE nid = :noteId")
-    void removeNoteFromFolder(int noteId);
-
-    @Query("SELECT * FROM notes WHERE folder_id = :folderId ORDER BY nid DESC")
+    // Belirli bir klasördeki notları getir - TABLO ADI DÜZELTİLDİ!
+    @Query("SELECT notes.* FROM notes " +
+            "INNER JOIN note_folder_cross_ref ON notes.nid = note_folder_cross_ref.note_id " +
+            "WHERE note_folder_cross_ref.folder_id = :folderId " +
+            "ORDER BY notes.nid DESC")
     List<Notes> getNotesByFolder(int folderId);
 
     @Insert
     void insert(Notes note);
+
+    @Insert
+    long insertAndGetId(Notes note);
 
     @Insert
     void insertAll(Notes... notes);

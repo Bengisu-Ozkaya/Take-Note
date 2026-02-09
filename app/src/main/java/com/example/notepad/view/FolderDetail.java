@@ -125,4 +125,10 @@ public class FolderDetail extends AppCompatActivity {
             finish();
         }
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadNotes();
+    }
 }

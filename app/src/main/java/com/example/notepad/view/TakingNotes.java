@@ -74,8 +74,7 @@ public class TakingNotes extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (etNoteContent.getText().toString().trim().isEmpty()){
-                    Toast.makeText(TakingNotes.this,"Boş not kaydedilemez!",Toast.LENGTH_SHORT).show();;
-                    finish(); // anasayfaya dön
+                    Toast.makeText(TakingNotes.this,"Boş not kaydedilemez!",Toast.LENGTH_SHORT).show();
                 }
                 else{
                     //notu kaydetme
@@ -90,7 +89,7 @@ public class TakingNotes extends AppCompatActivity {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!hasChanged()){
+                if (!hasChanged() && isEditMode){
                     finish();
                 }
                 // kullanıcı not girdiyse
@@ -110,13 +109,13 @@ public class TakingNotes extends AppCompatActivity {
         String currentContent = etNoteContent.getText().toString().trim();
         boolean isChanged = false;
 
-        if (isEditMode){
-            if (!title.equals(currentTitle) || !content.equals(currentContent)){
-                isChanged = true;
-            }
-        }else {
+        if (!title.equals(currentTitle) || !content.equals(currentContent)){
+            isChanged = true;
+        }
+        else {
             isChanged = false;
         }
+
         return isChanged;
     }
 
@@ -146,29 +145,31 @@ public class TakingNotes extends AppCompatActivity {
         String title = etNoteTitle.getText().toString().trim();
         String content = etNoteContent.getText().toString().trim();
 
-        if (isEditMode){ // notta güncelleme yaptıysak
-            Notes updateNote = notesDao.findById(noteId);
-            if (updateNote != null){
-                if(updateNote.noteContent == null && updateNote.noteContent.isEmpty()){
-                    Toast.makeText(this, "Boş not siliniyor...", Toast.LENGTH_SHORT).show();
-                    notesDao.delete(updateNote);
-                }
+        // Boş içerik kontrolü
+        if (content.isEmpty()) {
+            Toast.makeText(this, "Boş Not Kaydedilemez!", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        // Başlık boşsa varsayılan isim
+        if (title.isEmpty()) {
+            title = "Başlıksız Not";
+        }
+
+        if (isEditMode) {
+            // Güncelleme modu
+            Notes updateNote = notesDao.findById(noteId);
+            if (updateNote != null) {
                 updateNote.noteTitle = title;
                 updateNote.noteContent = content;
                 notesDao.update(updateNote);
+                Toast.makeText(this, "Not güncellendi!", Toast.LENGTH_SHORT).show();
             }
         } else {
-            Notes note = new Notes(title,content);
+            // Yeni not oluşturma
+            Notes note = new Notes(title, content);
             notesDao.insert(note);
             Toast.makeText(this, "Not kaydedildi!", Toast.LENGTH_SHORT).show();
-        }
-
-        if (content.isEmpty()){
-            Toast.makeText(TakingNotes.this,"Boş Not Kaydedilemez!",Toast.LENGTH_SHORT).show();
-        } else if (title.isEmpty()){
-            title = "Başlıksız Not";
-            Toast.makeText(TakingNotes.this,"Başlıksız not kaydedildi!",Toast.LENGTH_SHORT).show();
         }
 
         /*Database'e kaydedilme kontrolü*/
